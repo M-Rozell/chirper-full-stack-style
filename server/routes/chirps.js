@@ -39,8 +39,9 @@ router.post('/', async (req, res) => {
 // Delete
 router.delete('/:id', async (req, res) => {
     try {
-        res.json((await db.Chirps.remove(req.params.id))[0]);
-        console.log('deleted');
+        const id = req.params.id;
+        const dbRes = await db.Chirps.remove(id);
+        res.status(200).json(dbRes);
     } catch (error) {
         console.log(error);
         res.sendStatus(500)

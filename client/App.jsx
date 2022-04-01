@@ -2,52 +2,48 @@ import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import moment from "moment";
 import ChirpCard from "./components/ChirpCard.jsx";
+import "babel-polyfill";
+
 
 const App = () => {
 
-// useEffect(() => {
-//   fetch('http://localhost:3000/api/chirps')
-//   .then(res => res.json())
-//   .then(all => setChirps(all))
-// },[])
+  const [name, setName] = useState("");
+  const [content, setContent] = useState("");
+  const [chirps, setChirps] = useState([]);
 
-  const [username, setUsername] = useState("");
-  const [message, setMessage] = useState("");
-  const [chirps, setChirps] = useState([
-    {
-      id: uuidv4(),
-      username: "Josh",
-      message: "This is the chirp body!",
-      created: moment().format("dddd, MMMM Do YYYY, h:mm:ss a"),
-    },
-    {
-      id: uuidv4(),
-      username: "Haylee",
-      message: "Hello!",
-      created: moment().format("dddd, MMMM Do YYYY, h:mm:ss a"),
-    },
-    {
-      id: uuidv4(),
-      username: "Garrett",
-      message: "I'm not mad!",
-      created: moment().format("dddd, MMMM Do YYYY, h:mm:ss a"),
-    },
-  ]);
+  useEffect(() => {
+    fetch('http://localhost:3000/api/chirps')
+      .then(res => res.json())
+      .then(chirps => setChirps(chirps))
+      .catch(err => console.log(err))
+  }, [])
 
-  const handleUsernameChange = (e) => setUsername(e.target.value);
-  const handleMessageChange = (e) => setMessage(e.target.value);
-  const handleChirpSubmit = (e) => {
-    e.preventDefault();
+  const handleNameChange = (e) => setName(e.target.value);
+  const handleContentChange = (e) => setContent(e.target.value);
+  const handleChirpSubmit = async () => {
 
-    const newChirp = {
-      id: uuidv4(),
-      username: username,
-      message: message,
-      created: moment().format("dddd, MMMM Do YYYY, h:mm:ss a"),
-    };
+    const userData = {
+      userid: 1,
+      name: name,
+      content: content,
+      location: "home"
+    }
 
-    setChirps([...chirps, newChirp]);
-  };
+    try {
+      const add = await fetch('http://localhost:3000/api/chirps', {
+        method: "POST",
+        headers: { "Content-Type": 'application/JSON' },
+        body: JSON.stringify(userData)
+      })
+    }
+    catch (error) { if (err) throw err; }
+  }
+
+
+  const handleBtnDelete = (id) => {
+    fetch('http://localhost:3000/api/chirps/' + id, { method: "DELETE" })
+      .then(() => location.reload())
+  }
 
   return (
     <>
@@ -65,26 +61,26 @@ const App = () => {
           </div>
         </div>
         <div className="row">
-          <form action="">
+          <form onSubmit={handleChirpSubmit} action="">
             <div className="form-group mb-2">
               <input
                 type="text"
                 className="form-control mb-1"
                 placeholder="Username"
                 aria-label="Username"
-                value={username}
-                onChange={handleUsernameChange}
+                value={name}
+                onChange={handleNameChange}
               />
               <textarea
                 className="form-control mb-2"
-                              aria-label="With textarea"
-                              placeholder="(500 characters max)"
-                value={message}
-                onChange={handleMessageChange}
+                aria-label="With textarea"
+                placeholder="(500 characters max)"
+                value={content}
+                onChange={handleContentChange}
                 cols="30"
                 rows="10"
               ></textarea>
-              <button className="btn btn-dark" onClick={handleChirpSubmit}>
+              <button className="btn btn-dark" type="submit">
                 Chirp It!
               </button>
             </div>
@@ -93,9 +89,11 @@ const App = () => {
             {chirps.map((chirp) => (
               <ChirpCard
                 key={chirp.id}
-                username={chirp.username}
-                message={chirp.message}
-                created={chirp.created}
+                name={chirp.name}
+                content={chirp.content}
+                location={chirp.location}
+                created={chirp._created}
+                handleDelete={() => handleBtnDelete(chirp.id)}
               />
             ))}
           </div>
